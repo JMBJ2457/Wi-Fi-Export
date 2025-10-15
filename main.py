@@ -224,7 +224,7 @@ def main():
         
         while True:
             try:
-                choice = input("\nSelecciona una opcion (1-4): ").strip()
+                choice = input("\nSelecciona una opcion (1-5): ").strip()
                 
                 if choice == "1":
                     # Solo mostrar resultados
@@ -299,7 +299,7 @@ def main():
                     break
                     
                 else:
-                    print("[ERROR] Opcion invalida. Selecciona 1-4.")
+                    print("[ERROR] Opcion invalida. Selecciona 1-5.")
                     
             except KeyboardInterrupt:
                 print("\nSaliendo...")

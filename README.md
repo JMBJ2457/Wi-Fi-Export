@@ -76,7 +76,12 @@ python3 main.py
 Flujo típico:
 
 - El programa analiza perfiles.
-- Muestra un menú: ver en pantalla, guardar a archivo, enviar por correo, abrir GUI.
+- Muestra un menú con opciones:
+  1. Solo ver resultados en pantalla
+  2. Guardar resultados en archivo
+  3. Enviar reporte por correo
+  4. Salir
+  5. Abrir interfaz gráfica
 - Puedes elegir incluir **información adicional** (interfaces, drivers, etc.).
 
 Guardar a archivo (ejemplo):
@@ -114,11 +119,34 @@ En la GUI encontrarás:
 
 ---
 
+## Ejecutables precompilados
+
+Si ya generaste los binarios, puedes ejecutarlos directamente:
+
+- **Linux**: en `dist_linux/`
+
+```bash
+chmod +x dist_linux/main
+./dist_linux/main
+```
+
+- **Windows**: en `dist_windows/`
+
+```cmd
+.\dist_windows\main.exe
+```
+
+Notas:
+
+- El `.exe`/binario abre la **GUI por defecto** cuando está empaquetado (según `main.py`).
+- Para usar la **CLI** en Windows, ejecuta desde una terminal y/o genera el build con consola (`--console`).
+- En Linux, asegúrate de tener `python3-tk` instalado para la GUI.
+
 ## Generar ejecutable (build)
 
 ### Linux (binario nativo)
 
-1) Crear venv e instalar PyInstaller
+1. Crear venv e instalar PyInstaller
 
 ```bash
 python3 -m venv .venv
@@ -127,7 +155,7 @@ pip install --upgrade pip
 pip install pyinstaller
 ```
 
-2) Construir
+2. Construir
 
 ```bash
 pyinstaller --onefile --noconsole main.py
@@ -135,15 +163,15 @@ pyinstaller --onefile --noconsole main.py
 # pyinstaller --onefile --console main.py
 ```
 
-3) Ejecutar
+3. Ejecutar
 
 ```bash
-./dist/main
+./dist_linux/main
 ```
 
 ### Windows (.exe)
 
-1) En una máquina Windows:
+1. En una máquina Windows:
 
 ```bat
 py -m venv .venv
@@ -152,16 +180,16 @@ pip install --upgrade pip
 pip install pyinstaller
 ```
 
-2) Construir `.exe` (GUI por defecto)
+2. Construir `.exe` (GUI por defecto)
 
 ```bat
 pyinstaller --onefile --noconsole main.py
 ```
 
-3) Ejecutar
+3. Ejecutar
 
 ```bat
-.dist\main.exe
+.\dist_windows\main.exe
 ```
 
 Si alguna vez no detecta Tkinter:
