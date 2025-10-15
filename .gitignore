@@ -1,0 +1,19 @@
+# Python venv
+.venv/
+
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local environment files
+.env
+.env.*

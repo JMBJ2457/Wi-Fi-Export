@@ -5,9 +5,11 @@ Expone la función `run_gui(analyzer)` que recibe una instancia de
 mostrar/guardar el reporte y enviarlo por correo.
 """
 
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext, filedialog, messagebox
+from email.utils import parseaddr
 
 
 def run_gui(analyzer):
@@ -137,6 +139,47 @@ def run_gui(analyzer):
 
         ent_port.insert(0, "587")
 
+        def load_env_defaults():
+            env = {}
+            # 1) Variables de entorno del proceso
+            for k in ("SMTP_SERVER", "PORT", "EMAIL_USER", "APP_PASSWORD", "RECIPIENT_EMAIL"):
+                v = os.environ.get(k)
+                if v:
+                    env[k] = v
+            # 2) Archivo .env local (clave=valor con o sin comillas)
+            try:
+                env_path = os.path.join(os.getcwd(), ".env")
+                if os.path.isfile(env_path):
+                    with open(env_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line or line.startswith('#') or '=' not in line:
+                                continue
+                            k, v = line.split('=', 1)
+                            k, v = k.strip(), v.strip().strip('"').strip("'")
+                            if k and v and k in ("SMTP_SERVER", "PORT", "EMAIL_USER", "APP_PASSWORD", "RECIPIENT_EMAIL"):
+                                env.setdefault(k, v)
+            except Exception:
+                pass
+            # Aplicar a los campos si existen
+            if env.get("SMTP_SERVER"):
+                ent_smtp.delete(0, tk.END)
+                ent_smtp.insert(0, env["SMTP_SERVER"])
+            if env.get("PORT"):
+                ent_port.delete(0, tk.END)
+                ent_port.insert(0, str(env["PORT"]))
+            if env.get("EMAIL_USER"):
+                ent_user.delete(0, tk.END)
+                ent_user.insert(0, env["EMAIL_USER"])
+            if env.get("APP_PASSWORD"):
+                ent_pass.delete(0, tk.END)
+                ent_pass.insert(0, env["APP_PASSWORD"])
+            if env.get("RECIPIENT_EMAIL"):
+                ent_rcpt.delete(0, tk.END)
+                ent_rcpt.insert(0, env["RECIPIENT_EMAIL"])
+
+        load_env_defaults()
+
         def send_now():
             try:
                 smtp = ent_smtp.get().strip()
@@ -146,6 +189,15 @@ def run_gui(analyzer):
                 rcpt = ent_rcpt.get().strip()
                 if not all([smtp, port, user, pwd, rcpt]):
                     messagebox.showerror("Error", "Faltan datos de configuración.")
+                    return
+                # Validación simple de correos (remitente y destinatario)
+                def _is_valid_email(addr: str) -> bool:
+                    return '@' in parseaddr(addr)[1]
+                if not _is_valid_email(user):
+                    messagebox.showerror("Error", "El remitente debe ser un correo válido (ej. usuario@gmail.com).")
+                    return
+                if not _is_valid_email(rcpt):
+                    messagebox.showerror("Error", "El destinatario debe ser un correo válido (ej. destinatario@gmail.com).")
                     return
                 # Asegurar que hay datos analizados
                 if not analyzer.profiles_data:
@@ -158,7 +210,15 @@ def run_gui(analyzer):
                     messagebox.showinfo("Éxito", "Correo enviado correctamente.")
                     dlg.destroy()
                 else:
-                    messagebox.showerror("Error", "No se pudo enviar el correo.")
+                    try:
+                        from wifi_analyzer import email_utils
+                        detail = email_utils.get_last_error().strip()
+                    except Exception:
+                        detail = ""
+                    if detail:
+                        messagebox.showerror("Error", f"No se pudo enviar el correo.\n\nDetalle: {detail}")
+                    else:
+                        messagebox.showerror("Error", "No se pudo enviar el correo.")
             except Exception as e:
                 messagebox.showerror("Error", f"Error enviando correo: {e}")
 

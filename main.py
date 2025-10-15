@@ -188,6 +188,28 @@ def main():
     print("="*50)
     
     analyzer = WiFiAnalyzer()
+
+    def load_env_defaults():
+        env = {}
+        for k in ("SMTP_SERVER", "PORT", "EMAIL_USER", "APP_PASSWORD", "RECIPIENT_EMAIL", "SUBJECT"):
+            v = os.environ.get(k)
+            if v:
+                env[k] = v
+        try:
+            env_path = os.path.join(os.getcwd(), ".env")
+            if os.path.isfile(env_path):
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith('#') or '=' not in line:
+                            continue
+                        k, v = line.split('=', 1)
+                        k, v = k.strip(), v.strip().strip('"').strip("'")
+                        if k and v and k in ("SMTP_SERVER", "PORT", "EMAIL_USER", "APP_PASSWORD", "RECIPIENT_EMAIL", "SUBJECT"):
+                            env.setdefault(k, v)
+        except Exception:
+            pass
+        return env
     
     # Ejecutar analisis
     if analyzer.analyze_wifi_profiles():
@@ -224,16 +246,26 @@ def main():
                     # Enviar por correo
                     inc = input("\n¿Incluir información adicional opcional? (s/n): ").strip().lower().startswith('s')
                     analyzer.show_results(include_extra=inc)
+                    env = load_env_defaults()
                     print("\nCONFIGURACION DE CORREO:")
-                    smtp_server = input("Servidor SMTP (ej: smtp.gmail.com): ").strip()
-                    smtp_port = int(input("Puerto SMTP (ej: 587): ").strip())
-                    email_user = input("Tu email: ").strip()
-                    email_password = input("Tu contrasena: ").strip()
-                    recipient = input("Email destinatario: ").strip()
+                    def _prompt(label, default=""):
+                        val = input(f"{label}{f' [{default}]' if default else ''}: ").strip()
+                        return val or default
+                    smtp_server = _prompt("Servidor SMTP (ej: smtp.gmail.com)", env.get("SMTP_SERVER", ""))
+                    smtp_port_str = _prompt("Puerto SMTP (ej: 587)", str(env.get("PORT", "")))
+                    email_user = _prompt("Tu email", env.get("EMAIL_USER", ""))
+                    email_password = _prompt("Tu contrasena", env.get("APP_PASSWORD", ""))
+                    recipient = _prompt("Email destinatario", env.get("RECIPIENT_EMAIL", ""))
+                    subject = env.get("SUBJECT", "Reporte Analisis Wi-Fi")
+                    try:
+                        smtp_port = int(smtp_port_str)
+                    except Exception:
+                        print("[ERROR] Puerto SMTP invalido")
+                        break
                     
                     if all([smtp_server, smtp_port, email_user, email_password, recipient]):
                         analyzer.send_email(smtp_server, smtp_port, email_user, 
-                                          email_password, recipient, include_extra=inc)
+                                          email_password, recipient, subject, include_extra=inc)
                     else:
                         print("[ERROR] Faltan datos de configuracion")
                     break

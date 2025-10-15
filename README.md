@@ -30,6 +30,30 @@ Bienvenido al repo de un pequeño utilitario que lista perfiles Wi‑Fi guardado
 
 ---
 
+## Configuración rápida con `.env` (recomendado)
+
+Para evitar teclear credenciales cada vez, crea un archivo `.env` en la raíz del proyecto con:
+
+```ini
+SMTP_SERVER="smtp.gmail.com"
+PORT=587
+EMAIL_USER="tu_correo@gmail.com"
+APP_PASSWORD="xxxx xxxx xxxx xxxx"  # App Password (Gmail) con o sin espacios
+RECIPIENT_EMAIL="destinatario@correo.com"
+SUBJECT="Reporte de Wi-Fi"
+```
+
+- **CLI y GUI** cargan automáticamente estos valores como predeterminados.
+- El código sanea espacios invisibles y elimina espacios del `APP_PASSWORD`.
+- `.env` ya está en `.gitignore` para evitar subir credenciales al repo.
+
+Notas:
+
+- Gmail requiere 2FA y **App Password**. Usa puerto 587 (STARTTLS) o 465 (SSL).
+- Asegura que `EMAIL_USER` (remitente) sea el mismo usuario con el que autenticas.
+
+---
+
 ## Estructura rápida
 
 - `main.py`: punto de entrada CLI (y abre la GUI si se empaqueta)
@@ -62,6 +86,7 @@ Guardar a archivo (ejemplo):
 Enviar correo (ejemplo):
 
 - Opción 3 y completa SMTP/puerto/credenciales/destino.
+  - Si existe `.env`, los campos aparecerán prellenados; presiona Enter para aceptar.
 
 ---
 
@@ -85,6 +110,7 @@ En la GUI encontrarás:
 - **Checkbox** para incluir información adicional.
 - **Botones de secciones**: ver solo Interfaces, Drivers, IP, MAC, Export.
 - **Guardar** y **Enviar correo** con diálogos sencillos.
+  - Si existe `.env`, el diálogo se prellena automáticamente.
 
 ---
 
